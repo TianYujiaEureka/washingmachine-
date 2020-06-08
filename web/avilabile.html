@@ -1,0 +1,118 @@
+
+<html><meta charset="UTF-8"> <!-- for HTML5 -->
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+
+    <title>一台公共洗衣机</title>
+    <body>    
+            <div class="Humtem"> 温度：<span id="showserverstr">°C</span>
+        湿度：<span id="showserverstr1">%</span></div></body>
+    <text class="one">请选择挡位并确认</text>
+    <body>
+    <div>您选择的是<span id="showserverstr2">档，挡位数越高清洁效果越强劲哦~</span>
+        价格：<span id="showserverstr3">元</span>
+    
+        <button type="button" onclick="getStrFromServer()">确认</button>
+    </div>    
+    <text class="two">
+        请确认您选择的洗衣挡位，加入适量清洁剂并均匀放入衣物，保证衣物不超过洗衣机内桶沿。</text>
+        <div><span id="sendCmdResult"></span></div>
+        <div>         
+        <input id="inputCmd" type="number"  maxlength="5" value="text1">
+        <button type="sendCmdBtn" onclick="sendCmdFromServer()">开始洗衣</button>
+        </div>
+    </body>
+
+    <script>
+        function getStrFromServer() {
+            var xmlhttp;
+            if (window.XMLHttpRequest) {//  IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+                xmlhttp = new XMLHttpRequest();
+            }
+            else {// IE6, IE5 浏览器执行代码
+                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    var revtext = xmlhttp.responseText;
+                    var revObj = JSON.parse(revtext);
+                    var getdata = JSON.parse(revObj.data);
+                    var message = revObj.message;
+                    var result = revObj.result;
+                    if (result != 0)
+                        alert(message);
+                    else
+                    {
+                        //alert(getdata);
+						var val1 = parseFloat(getdata.val1) >> 8 ;
+						var val2 = (parseFloat(getdata.val1) & 0xFF) / 10;
+                        document.getElementById("showserverstr").innerHTML =val1+val2;
+						var val3 = parseFloat(getdata.val2) >> 8 ;
+						var val4 = (parseFloat(getdata.val2) & 0xFF) / 10;
+                        document.getElementById("showserverstr1").innerHTML =val3+val4;
+                        var val5 = parseFloat(getdata.val3)
+                        document.getElementById("showserverstr2").innerHTML =val5;
+                        var val6 = parseFloat(getdata.val3)
+                        document.getElementById("showserverstr3").innerHTML =val5*0.85;
+                    }
+                }
+            }
+            xmlhttp.open("GET", "http://traindev.sinoioetech.com/DeviceCtrl/DevCtrl/GetDeviceCurState?devid=DC20100166146533&devsecret=123456", true);
+            xmlhttp.send();
+        }
+
+        function sendCmdFromServer() {
+            var va15 =document.getElementById("inputCmd").value
+            if(va15==""){
+                
+                document.getElementById("sendCmdResult").innerHTML = "指令不能为空";
+                return;
+            }
+            if(parseInt(va15)>65535){
+                document.getElementById("sendCmdResult").innerHTML = "指令数值最大为65535";
+                return;
+            }
+            
+            document.getElementById("sendCmdResult").innerHTML = "";
+            var xmlhttp;
+            if (window.XMLHttpRequest) {//  IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+                xmlhttp = new XMLHttpRequest();
+            }
+            else {// IE6, IE5 浏览器执行代码
+                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    var revtext = xmlhttp.responseText;
+                    var revObj = JSON.parse(revtext);
+                    var message = revObj.message;
+                    var result = revObj.result;
+                    if (result != 0)
+                        alert(message);
+                    else
+                    {
+                        document.getElementById("sendCmdResult").innerHTML = revtext;
+                    }
+                }
+            }
+            xmlhttp.open("POST", "http://traindev.sinoioetech.com/DeviceCtrl/DevCtrl/OptDeviceCommand?devid=DC20100166146533&devsecret=123456&cmdname=val1&cmdvalue="+ va15 , true);
+            xmlhttp.send();
+        }
+    </script>
+    <style type="text/css">
+    div{text-align: center;
+        margin:10px auto 10px auto;
+			box-shadow: 0px 0px 6px 1px rgba(0,0,0,.1); 
+			font-size:20px;
+			border-radius:2em;
+    button{   
+        /*border:groove 10px #888888;   */
+        border-radius:2em;  }
+    text{
+			font-family: Georgia, serif;
+         text-align: center;
+        margin:10px auto 10px auto;
+			font-size:30px;}
+    </style>
+</html>
